@@ -3,6 +3,12 @@ import { v2 as cloudinary } from 'cloudinary';
 import connectDB from '@/lib/mongodb';
 import Event from '@/database/event.model';
 
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 export async function POST(req: NextRequest) {
     try {
         await connectDB();
@@ -29,9 +35,16 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const tags = JSON.parse(formData.get('tags') as string);
-        const agenda = JSON.parse(formData.get('agenda') as string);
-
+        let tags, agenda;
+        try {
+            tags = JSON.parse(formData.get('tags') as string);
+            agenda = JSON.parse(formData.get('agenda') as string);
+        } catch (e) {
+            return NextResponse.json(
+                { message: 'Invalid JSON in tags or agenda', error: e },
+                { status: 400 }
+            );
+        }
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 

@@ -78,11 +78,12 @@ export async function GET(
             return NextResponse.json(
                 {
                     message: 'Failed to fetch event',
-                    ...(process.env.NODE_ENV === 'development' && { error: error.message }),
+                    ...(process.env.NODE_ENV === 'development' && {
+                        error: error.message,
+                    }),
                 },
                 { status: 500 }
             );
-        }
         }
 
         // Handle unknown errors

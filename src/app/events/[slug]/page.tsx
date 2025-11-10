@@ -7,6 +7,10 @@ import EventCard from '@/components/EventCard';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
+if (!BASE_URL) {
+    throw new Error('NEXT_PUBLIC_BASE_URL environment variable is not set');
+}
+
 const EventDetailItem = ({
     icon,
     alt,
@@ -50,22 +54,31 @@ const EventDetailsPage = async ({
 }) => {
     const { slug } = await params;
 
-    const request = await fetch(`${BASE_URL}/api/events/${slug}/`);
+    const request = await fetch(`${BASE_URL}/api/events/${slug}`);
+
+    if (!request.ok) {
+        return notFound();
+    }
+
+    const data = await request.json();
+
+    if (!data.event) {
+        return notFound();
+    }
+
     const {
-        event: {
-            description,
-            image,
-            overview,
-            date,
-            time,
-            location,
-            mode,
-            agenda,
-            audience,
-            tags,
-            organizer,
-        },
-    } = await request.json();
+        description,
+        image,
+        overview,
+        date,
+        time,
+        location,
+        mode,
+        agenda,
+        audience,
+        tags,
+        organizer,
+    } = data.event;
 
     if (!description) return notFound();
 
@@ -159,7 +172,10 @@ const EventDetailsPage = async ({
                     {similarEvents.length > 0 &&
                         similarEvents.map((similarEvent: IEvent) => (
                             <EventCard
-                                key={similarEvent.title}
+                                key={
+                                    similarEvent._id?.toString() ||
+                                    similarEvent.title
+                                }
                                 {...similarEvent}
                             />
                         ))}
